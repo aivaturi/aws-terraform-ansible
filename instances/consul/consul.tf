@@ -1,0 +1,112 @@
+
+data "template_file" "userdata" {
+    template = "${file("${path.module}/userdata.tpl")}"
+}
+
+provider "aws" {
+    region = "${var.region}"
+}
+
+data "aws_ami" "ubuntu" {
+    most_recent = true
+    filter {
+        name = "name"
+        values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+    }
+    owners = ["099720109477"] # Canonical
+}
+
+resource "null_resource" "check_bastion" {
+    provisioner "local-exec" {
+        command = "while ! test -f /tmp/terraform-${var.vpc_name}-bastion-alive; do sleep 5; done"
+    }
+}
+
+resource "aws_instance" "consul" {
+    # If we don't do this, terraform will start
+    # parallelizing all operations.
+    depends_on = ["null_resource.check_bastion"]
+
+    # Ugly hack to get around terraform limitation
+    # of not being able to interpolate variables in
+    # count
+    count                       = 3
+
+    ami                         = "${data.aws_ami.ubuntu.id}"
+    instance_type               = "t2.micro"
+    user_data                   = "${data.template_file.userdata.rendered}"
+    key_name                    = "${var.vpc_name}_ssh_key"
+    subnet_id                   = "${element(var.subnets, count.index)}"
+    vpc_security_group_ids      = ["${var.sg}"]
+    associate_public_ip_address = false
+
+    root_block_device {
+        volume_size = 24
+    }
+    tags {
+        Name = "${var.vpc_name} consul1-${count.index}"
+        role = "consul"
+    }
+}
+
+output "consul_servers" {
+    value = ["${aws_instance.consul.*.private_ip}"]
+}
+
+resource "aws_route53_record" "consul" {
+    zone_id = "${var.dns_zone_id}"
+    name    = "consul"
+    type    = "A"
+    ttl     = "300"
+    records = ["${aws_instance.consul.*.private_ip}"]
+}
+
+resource "aws_route53_record" "consul_server" {
+    count   = 3
+    zone_id = "${var.dns_zone_id}"
+    name    = "${element(split(".", var.dns_domain), 0)}consul1-${count.index}"
+    type    = "A"
+    ttl     = "300"
+    records = ["${element(aws_instance.consul.*.private_ip, count.index)}"]
+}
+
+resource "aws_route53_record" "consul_server_cname" {
+    count   = 3
+    zone_id = "${var.dns_zone_id}"
+    name    = "consul1-${count.index}"
+    type    = "CNAME"
+    ttl     = "60"
+    records = ["${element(split(".", var.dns_domain), 0)}consul1-${count.index}.${var.dns_domain}"]
+}
+
+resource "null_resource" "consul_servers" {
+    triggers {
+        "ips" = "${jsonencode(aws_instance.consul.*.private_ip)}"
+    }
+}
+
+resource "null_resource" "check_ssh" {
+    provisioner "local-exec" {
+        command = "exec ${path.root}/scripts/bin/check_ssh.sh ${var.bastion_public_ip} ${join(",", aws_instance.consul.*.private_ip)}"
+    }
+}
+
+resource "null_resource" "install_consul" {
+    depends_on = ["null_resource.check_ssh"]
+
+    provisioner "local-exec" {
+        command = "echo \"export EC2_REGION=${var.region}
+                   export ANSIBLE_PRIVATE_KEY_FILE=$PWD/${var.vpc_name}_ssh
+                   export VPC_ENV_NAME=${var.vpc_name}
+                   export CONSUL_SERVER=consul.${var.dns_domain}\" > /tmp/vpc_vars"
+    }
+
+    provisioner "local-exec" {
+        command = "exec ${path.root}/scripts/run_ansible.sh -i consul -e \\
+                     'target=tag_role_consul consul_server=true \\
+                     consul_bootstrap_expect=${length(aws_instance.consul.*.private_ip)} \\
+                     consul_recursor=${cidrhost(var.vpc_cidr_block, 2)} \\
+                     consul_datacenter=${element(split(".", var.dns_domain), 0)} \\
+                     consul_start_join=${lookup(null_resource.consul_servers.triggers, "ips")}'"
+    }
+}

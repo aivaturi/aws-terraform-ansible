@@ -1,0 +1,29 @@
+{
+    "datacenter": "{{ consul_datacenter }}",
+    "domain": "{{ consul_domain }}",
+    "node_name": "{{ consul_node_name }}",
+    "server": {{ 'true' if consul_server else 'false' }},
+{% if consul_server and consul_bootstrap_expect %}
+    "bootstrap_expect": {{ consul_bootstrap_expect }},
+{% endif %}
+{% if consul_start_join|length > 0 %}
+    "start_join": {{ consul_start_join }},
+{% endif %}
+    "ui_dir": "{{ consul_ui_dir }}",
+    "bind_addr": "{{ consul_bind_addr }}",
+    "client_addr": "{{ consul_client_addr }}",
+    "advertise_addr": "{{ consul_advertise_addr }}",
+    "rejoin_after_leave": {{ consul_rejoin_after_leave | to_nice_json }},
+    "leave_on_terminate": {{ consul_leave_on_terminate | to_nice_json }},
+    "enable_syslog": {{ consul_enable_syslog | to_nice_json }},
+    "data_dir": "{{ consul_data_dir }}",
+    "recursor": "{{ consul_recursor }}",
+    "ports": {
+        "dns": {{ consul_dns_port }},
+        "http": {{ consul_http_port }},
+        "rpc": {{ consul_rpc_port }},
+        "serf_lan": {{ consul_serf_lan_port }},
+        "serf_wan": {{ consul_serf_wan_port }},
+        "server": {{ consul_server_port }}
+    }
+}

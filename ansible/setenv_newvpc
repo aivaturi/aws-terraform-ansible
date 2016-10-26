@@ -1,0 +1,34 @@
+
+# Make sure older style env varsare unset
+unset ANSIBLE_CONFIG
+unset EC2_INI_PATH
+
+# Find where we are...
+export ANSIBLE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# ANSIBLE default configs
+export ANSIBLE_INVENTORY="$ANSIBLE_DIR/ec2_ap.py"
+export ANSIBLE_LIBRARY="$ANSIBLE_DIR/lib"
+export ANSIBLE_LOG_PATH="$ANSIBLE_DIR/log/ansible.log"
+export ANSIBLE_NOCOWS=1
+export ANSIBLE_REMOTE_TEMP="/tmp"
+export ANSIBLE_ROLES_PATH="$ANSIBLE_DIR/roles"
+export ANSIBLE_SSH_ARGS="-F /tmp/terraform_ansible_ssh.cfg"
+export ANSIBLE_HOST_KEY_CHECKING=False
+export ANSIBLE_PRIVATE_KEY_FILE="$SSH_KEY_FILE"
+
+# Plugins path
+export ANSIBLE_ACTION_PLUGINS="$ANSIBLE_DIR/plugins/action:/usr/share/ansible_plugins/action_plugins"
+export ANSIBLE_CACHE_PLUGINS="$ANSIBLE_DIR/plugins/cache:/usr/share/ansible_plugins/cache_plugins"
+export ANSIBLE_CALLBACK_PLUGINS="$ANSIBLE_DIR/plugins/callback:/usr/share/ansible_plugins/callback_plugins"
+export ANSIBLE_CONNECTION_PLUGINS="$ANSIBLE_DIR/plugins/connection:/usr/share/ansible_plugins/connection_plugins"
+export ANSIBLE_FILTER_PLUGINS="$ANSIBLE_DIR/plugins/filter:/usr/share/ansible_plugins/filter_plugins"
+export ANSIBLE_LOOKUP_PLUGINS="$ANSIBLE_DIR/plugins/lookup:/usr/share/ansible_plugins/lookup_plugins"
+export ANSIBLE_SHELL_PLUGINS="$ANSIBLE_DIR/plugins/shell:/usr/share/ansible_plugins/shell_plugins"
+export ANSIBLE_STRATEGY_PLUGINS="$ANSIBLE_DIR/plugins/strategy:/usr/share/ansible_plugins/strategy_plugins"
+export ANSIBLE_VARS_PLUGINS="$ANSIBLE_DIR/plugins/vars:/usr/share/ansible_plugins/vars_plugins"
+
+eval "cat <<EOF
+$(<${ANSIBLE_DIR}/all_newvpc.tmpl)
+EOF
+" > "$ANSIBLE_DIR/group_vars/all"

@@ -1,0 +1,66 @@
+---
+
+- name: Pre-Install | Install pre-reqs for python
+  apt: name=python-setuptools update_cache=yes
+  tags: consul_pre_install
+
+- name: Pre-Install | Install python-consul
+  easy_install: name=python-consul
+  tags: consul_pre_install
+
+- name: Pre-Install | Create consul group
+  group: name=consul system=yes
+  tags: consul_pre_install
+
+- name: Pre-Install | Create consul user
+  user: name=consul group=consul system=yes
+  tags: consul_pre_install
+
+- name: Pre-Install | Create required Directories
+  file: path={{ item }} state=directory owner=consul group=consul recurse=true
+  with_items:
+    - "{{ consul_data_dir }}"
+    - "{{ consul_config_dir }}"
+  tags: consul_pre_install
+
+- name: Pre-Install | Create ui directory
+  file: path={{ consul_ui_dir }} state=directory owner=consul group=consul recurse=true
+  changed_when: False
+  tags: consul_pre_install
+
+- name: Install | Download consul package
+  get_url: url={{ consul_download }} dest=/tmp validate_certs=no
+  register: consul_downloaded
+  tags: consul_install
+
+- name: Install | Decompress consul package
+  unarchive: src=/tmp/{{ consul_archive }} dest=/tmp copy=no
+  when: consul_downloaded.changed
+  tags: consul_install
+
+- name: Install | Download consul ui
+  get_url: url={{ consul_ui_download }}  dest=/tmp validate_certs=no
+  register: consul_ui_downloaded
+  tags: consul_ui_install
+
+- name: Install | move consul into place
+  command: mv /tmp/consul {{ consul_bin }}
+  when: consul_downloaded.changed
+  tags: consul_install
+
+- name: Install | copy and unpack consul ui
+  unarchive: src=/tmp/{{ consul_ui_archive }} dest=/var/consul/ui/dist copy=no
+  when: consul_ui_downloaded.changed
+  tags: consul_ui_install
+
+- name: Install | Consul config
+  template: src=consul.json dest={{ consul_config_dir }}/consul.json owner=consul group=consul
+  tags: consul_install
+
+- name: Install | Setup upstart configs
+  template: src=upstart.conf dest=/etc/init/consul.conf
+  tags: consul_install
+
+- name: Install | enable service
+  service: name=consul enabled=yes state=started
+  tags: consul_install

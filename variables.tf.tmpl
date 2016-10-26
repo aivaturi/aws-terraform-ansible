@@ -1,0 +1,52 @@
+variable "region" {
+    description = "AWS Region, e.g. us-east-1"
+    default = "${EC2_REGION}"
+}
+
+variable "vpc_name" {
+    description = "Name to uniquely identify the VPC. E.g. production"
+    default = "${VPC_NAME}"
+}
+
+variable "vpc_cidr_block" {
+    description = "/16 CIDR for the whole VPC"
+    default = "${VPC_CIDR_BLOCK}"
+}
+
+variable "dns_domain" {
+    description = "This is for internal use, not external"
+    default = "${VPC_DOMAIN}"
+}
+
+variable "ssh_key_file" {
+    description = "SSH private key file"
+    default = "${SSH_KEY_FILE}"
+}
+
+variable "remote_ips" {
+    description = "All the IPs allowed to connect to bastion host"
+    default = ${EGRESS_IPS}
+}
+
+variable "azs" {
+    default = {
+        #
+        # Pick any two AZ for each region. High availability
+        # across two zones is adequate for most use cases.
+        #
+        # NOTE: You HAVE TO stick with the choice of AZs, they
+        #       cannot be changed
+        #
+        "ap-northeast-1" = "ap-northeast-1b,ap-northeast-1c"
+        "ap-northeast-2" = "ap-northeast-2a,ap-northeast-2c"
+        "ap-south-1" = "ap-south-1a,ap-south-1b"
+        "ap-southeast-1" = "ap-southeast-1a,ap-southeast-1b"
+        "ap-southeast-2" = "ap-southeast-2b,ap-southeast-2c"
+        "eu-central-1" = "eu-central-1a,eu-central-1b"
+        "eu-west-1" = "eu-west-1b,eu-west-1c"
+        "sa-east-1" = "sa-east-1b,sa-east-1c"
+        "us-east-1" = "us-east-1d,us-east-1e"
+        "us-west-1" = "us-west-1a,us-west-1b"
+        "us-west-2" = "us-west-2b,us-west-2c"
+    }
+}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Consul Agent
+Wants=basic.target
+After=basic.target network.target
+
+[Service]
+User=consul
+Group=consul
+Environment=GOMAXPROCS={{ ansible_processor_count }}
+ExecStart={{ consul_bin }} agent -config-dir {{ consul_config_dir }}
+ExecReload={{ consul_bin }} reload -rpc-addr=127.0.0.1:{{ consul_rpc_port }}
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target

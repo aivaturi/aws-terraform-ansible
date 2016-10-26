@@ -1,0 +1,22 @@
+{
+    "CN": "{{ vpc_zone }}-Root-CA",
+    "hosts": [
+        ""
+    ],
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "Santa Clara",
+            "O": "UAC Corp",
+            "OU": "IT",
+            "ST": "California"
+        }
+    ],
+    "ca": {
+        "expiry": "87000h"
+    }
+}

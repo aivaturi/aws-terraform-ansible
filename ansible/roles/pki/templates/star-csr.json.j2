@@ -1,0 +1,21 @@
+{
+    "CN": "{{ vpc_zone }}",
+    "hosts": [
+        "localhost",
+        "127.0.0.1",
+        "*.{{ vpc_root_domain }}"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "Santa Clara",
+            "O": "UAC Corp",
+            "OU": "IT",
+            "ST": "California"
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+---
+
+- name: Install and Configure Consul cluster
+  hosts: '{{ target }}'
+  become: true
+  become_method: sudo
+  roles:
+    - { role: consul, tags: install_consul }

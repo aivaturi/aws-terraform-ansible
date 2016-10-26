@@ -1,0 +1,8 @@
+---
+
+- name: restart consul
+  service: name=consul enabled=yes state=restarted
+
+- name: reload consul
+  service: name=consul state=reloaded
+

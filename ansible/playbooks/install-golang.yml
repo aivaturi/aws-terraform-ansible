@@ -1,0 +1,8 @@
+---
+
+- name : Install golang
+  hosts: "{{ target }}"
+  become: true
+  become_method: sudo
+  roles:
+    - { role: golang, tags: install_golang }

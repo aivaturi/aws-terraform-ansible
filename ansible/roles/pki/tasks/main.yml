@@ -1,0 +1,118 @@
+---
+
+- name: Install pre-reqs (libltdl-dev)
+  apt: name=libltdl-dev update_cache=yes state=latest
+  tags:
+    - install_pki
+
+- name: Install pre-reqs (git)
+  apt: name=git update_cache=yes state=latest
+  tags:
+    - install_pki
+
+- name: Create gopath directory
+  file:
+    path: "~/go"
+    state: "directory"
+    mode: 0700
+    owner: "root"
+    group: "root"
+  tags:
+    - install_pki
+
+- name: Install cfssl
+  shell: "source /etc/profile.d/go-bin.sh &&
+          source /etc/profile.d/go-path.sh &&
+          go get -u github.com/cloudflare/cfssl/cmd/..."
+  args:
+    executable: /bin/bash
+  tags:
+    - install_pki
+
+- name: Create certs directory
+  file:
+    path: "~/cfssl"
+    state: "directory"
+    mode: 0700
+    owner: "root"
+    group: "root"
+  tags:
+    - setup_pki
+
+- name: Copy cfssl ca config
+  template:
+    src: "templates/ca-config.json.j2"
+    dest: "~/cfssl/ca-config.json"
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - setup_pki
+
+- name: Copy cfssl root ca csr
+  template:
+    src: "templates/ca-csr.json.j2"
+    dest: "~/cfssl/ca-csr.json"
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - setup_pki
+
+- name: Copy cfssl intermediate ca config
+  template:
+    src: "templates/intermediate-csr.json.j2"
+    dest: "~/cfssl/intermediate-csr.json"
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - setup_pki
+
+- name: Copy cfssl start cert config
+  template:
+    src: "templates/star-csr.json.j2"
+    dest: "~/cfssl/star-csr.json"
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - setup_pki
+
+- name: Generate root cert
+  #no_log: true
+  shell: "pwd && source /etc/profile.d/go-bin.sh &&
+          source /etc/profile.d/go-path.sh &&
+          cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
+  args:
+    creates: "ca.pem"
+    executable: /bin/bash
+    chdir: "~/cfssl"
+  tags:
+    - setup_pki
+
+- name: Generate Intermediate cert
+  #no_log: true
+  shell: "source /etc/profile.d/go-bin.sh &&
+          source /etc/profile.d/go-path.sh &&
+          cfssl gencert -ca ./ca.pem -ca-key ./ca-key.pem -config='ca-config.json'
+          -profile='intermediate' intermediate-csr.json | cfssljson -bare {{ vpc_zone }}-intermediate"
+  args:
+    creates: "{{ vpc_zone }}-intermediate.pem"
+    executable: /bin/bash
+    chdir: "~/cfssl"
+  tags:
+    - setup_pki
+
+- name: Generate star cert
+  #no_log: true
+  shell: "source /etc/profile.d/go-bin.sh &&
+          source /etc/profile.d/go-path.sh &&
+          cfssl gencert -ca ./{{ vpc_zone }}-intermediate.pem -ca-key ./{{ vpc_zone }}-intermediate-key.pem
+          -config='ca-config.json' -profile='server' star-csr.json | cfssljson -bare star-{{ vpc_zone }}"
+  args:
+    creates: "star-{{ vpc_zone }}.pem"
+    executable: /bin/bash
+    chdir: "~/cfssl"
+  tags:
+    - setup_pki

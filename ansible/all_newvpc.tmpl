@@ -1,0 +1,12 @@
+---
+
+ssh_remote_port:  ${ANSIBLE_REMOTE_PORT}
+ansible_ssh_private_key_file: '${ANSIBLE_PRIVATE_KEY_FILE}'
+ansible_dir: '${ANSIBLE_DIR}'
+
+## VPC specific
+env_name: '${VPC_ENV_NAME}'
+vpc_id: '${VPC_ID}'
+
+## Consul
+consul_api_server: '${CONSUL_SERVER}'

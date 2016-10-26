@@ -1,0 +1,30 @@
+---
+
+consul_advertise_addr: "{{ ansible_default_ipv4.address }}"
+consul_archive: "consul_{{ consul_version }}_linux_amd64.zip"
+consul_bin: /bin/consul
+consul_bind_addr: 0.0.0.0
+consul_bootstrap_expect: false
+consul_client_addr: 0.0.0.0
+consul_config_dir: /etc/consul
+consul_data_dir: /var/consul/data
+consul_dns_port: 8600
+consul_domain: consul.
+consul_download: "https://releases.hashicorp.com/consul/{{consul_version}}/{{ consul_archive }}"
+consul_enable_syslog: true
+consul_group: consul
+consul_http_port: 8500
+consul_leave_on_terminate: true
+consul_node_name: "{{ ansible_hostname }}"
+consul_rejoin_after_leave: true
+consul_rpc_port: 8400
+consul_serf_lan_port: 8301
+consul_serf_wan_port: 8302
+consul_server: false
+consul_server_group: consul-server
+consul_server_port: 8300
+consul_ui_archive: "consul_{{ consul_version }}_web_ui.zip"
+consul_ui_dir: /var/consul/ui/dist
+consul_ui_download: "https://releases.hashicorp.com/consul/{{consul_version}}/{{ consul_ui_archive }}"
+consul_user: consul
+consul_version: 0.7.0

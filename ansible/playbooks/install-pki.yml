@@ -1,0 +1,16 @@
+---
+
+- name : Install golang
+  hosts: "{{ target }}"
+  become: true
+  become_method: sudo
+  pre_tasks:
+    - assert:
+        that:
+          - vpc_zone != ''
+          - vpc_root_domain != ''
+      tags:
+        - check_input
+  roles:
+    - { role: golang, tags: install_golang }
+    - { role: pki, tags: pki }
