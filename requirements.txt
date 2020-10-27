@@ -8,7 +8,7 @@ certifi==2016.8.31
 cffi==1.8.3
 click==6.6
 consulate==0.6.0
-cryptography==1.5
+cryptography==3.2
 docutils==0.12
 ecdsa==0.13
 enum34==1.1.6
