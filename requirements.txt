@@ -20,7 +20,7 @@ hvac==0.2.16
 idna==2.1
 ipaddress==1.0.17
 itsdangerous==0.24
-Jinja2==2.8
+Jinja2==2.11.3
 jmespath==0.9.0
 jsonschema==2.5.1
 logging==0.4.9.6
