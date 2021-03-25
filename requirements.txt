@@ -40,7 +40,7 @@ python-debian==0.1.28
 python-jenkins==0.4.13
 python-ldap==2.4.27
 pytz==2016.6.1
-PyYAML==3.12
+PyYAML==5.4
 requests==2.11.1
 rexutil==1.0.5
 s3transfer==0.1.4
