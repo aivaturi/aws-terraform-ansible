@@ -1,5 +1,5 @@
 aniso8601==1.1.0
-ansible==2.1.1.0
+ansible==2.9.20
 ansible-shell==0.0.5
 boto==2.42.0
 boto3==1.4.0
