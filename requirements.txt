@@ -4,7 +4,7 @@ ansible-shell==0.0.5
 boto==2.42.0
 boto3==1.4.0
 botocore==1.4.56
-certifi==2016.8.31
+certifi==2022.12.7
 cffi==1.8.3
 click==6.6
 consulate==0.6.0
